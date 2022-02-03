@@ -1,27 +1,19 @@
 import turtle
 import pandas
 from write_state import WriteState
+from state_engine import StateEngine
 
 screen = turtle.Screen()
 screen.title("U.S. States Game")
 image = "blank_states_img.gif"
-data = pandas.read_csv("50_states.csv")
-states_list = data.state.to_list()
 screen.addshape(image)
-correct_guesses = []
 turtle.shape(image)
 write = WriteState()
-
-
-def check_guess(guess: str, states: list, answers: list):
-    """Checks if guess is a correct state and if state has already been guessed"""
-    if guess in states and guess not in answers:
-        correct_guesses.append(users_guess)
-        write.write_answer(users_guess)
+state_engine = StateEngine()
 
 
 def screen_pop():
-    guessed_states = len(correct_guesses)
+    guessed_states = len(state_engine.correct_guesses)
     if guessed_states == 0:
         title = "Guess the State"
     else:
@@ -29,23 +21,18 @@ def screen_pop():
     return screen.textinput(title=title, prompt="What's another state name?").title()
 
 
-def states_to_learn():
-    need_practice = []
-    for state in states_list:
-        if state not in correct_guesses:
-            need_practice.append(state)
-        df = pandas.DataFrame(need_practice, columns=["Need Practice:"])
-        df.to_csv('states_to_learn.csv', index=False)
-
-
-while len(correct_guesses) != 50:
+while len(state_engine.correct_guesses) != 50:
     users_guess = screen_pop()
     if users_guess == "Exit":
         break
-    check_guess(users_guess, states_list, correct_guesses)
+    if state_engine.check_guess(users_guess):
+        write.write_answer(users_guess)
+
 
 # states_to_learn.csv
-states_to_learn()
+state_engine.states_to_learn()
+df = pandas.DataFrame(state_engine.need_practice, columns=["Need Practice:"])
+df.to_csv('states_to_learn.csv', index=False)
 
 
 
